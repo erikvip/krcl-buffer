@@ -1,0 +1,2 @@
+CREATE TABLE playlist(id integer primary key not null, start datetime, end datetime, artist text, release text, song text, duration integer);
+

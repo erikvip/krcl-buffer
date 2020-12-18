@@ -1,0 +1,34 @@
+#!/bin/bash
+infile="$1"
+IFS=$'\n'; 
+
+
+START=""; 
+LEN=0; 
+COUNT=0; 
+
+for line in $(cat "${infile}"); do 
+	
+	n=$(echo "$line" | cut -d "'" -f1);
+	FFCUT_FILE=$(echo "$line" | cut -d "'" -f2);
+
+	
+
+	if [[ "${START}" == ""  ]]; then
+		START=$n; 
+	else
+		(( COUNT++ )); 
+		LEN=$(echo "${n} - ${START}" | bc -l | tr -d '\n'); 
+
+#		echo "-ss ${START} -t ${LEN}   # ${START} - ${n}"
+
+		# Do ffmpeg command here...
+		echo "ffmpeg -stats -ss ${START} -t ${LEN} -i $FFCUT_FILE -vcodec libx264 -crf 25 ${COUNT}.mp4"
+
+		START=""
+		LEN=0
+
+	fi
+
+#	echo $n; 
+done;

@@ -1,0 +1,5 @@
+15738  Tue Aug 25 2020 10:45:17 sqlite3 krcl-playlist.sqlite3
+15739  Tue Aug 25 2020 10:46:39 ./update-krcl-playlist.sh 
+15740  Tue Aug 25 2020 09:46:37 streamripper 'http://192.168.42.7:8080/krcl' -A -a '%d.mp3'
+15741  Tue Aug 25 2020 10:46:47 sqlite3 krcl-playlist.sqlite3
+
