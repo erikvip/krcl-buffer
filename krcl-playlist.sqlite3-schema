@@ -1,2 +1,1 @@
-CREATE TABLE playlist(id integer primary key not null, start datetime, end datetime, artist text, release text, song text, duration integer, showtitle text);
-
+CREATE TABLE playlist(id integer primary key not null, start datetime, end datetime, artist text, release text, song text, duration integer, showtitle text, songindex integer default null, streamfile text default null);
