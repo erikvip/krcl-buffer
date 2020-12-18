@@ -32,6 +32,10 @@ main() {
 		now_ts=$(TZ="America/Denver" date "+%s");
 		sleep_timer=$(( $song_end_ts - $now_ts ));
 
+		if [[ "${last_song_end}" == "" ]]; then
+			last_song_end="${song_end}"; 
+		fi;
+
 		if [[ "${song_end}" != "${last_song_end}" ]]; then
 			song_index=$(( $song_index + 1 ));
 			last_song_end="${song_end}";
