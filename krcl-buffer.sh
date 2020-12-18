@@ -16,12 +16,14 @@ setup() {
 
 	if [[ ! `pgrep --full 'streamripper.*krcl-high'` ]]; then
 		# Try to guess the streamripper file...
-		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a 'data/new/%d.mp3' 2>&1 >> data/streamripper.log &
 		streamripper_date=$(TZ="America/Denver" date '+%Y_%m_%d_%H_%M_%S');
+#		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a 'data/new/%d.mp3' 2>&1 >> data/streamripper.log &
+		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a "data/new/${streamripper_date}.mp3" 2>&1 >> data/streamripper.log &
 	fi
 }
 
 main() { 
+	last_song_end="";
 	echo "Streamripper filename: ${streamripper_date}";
 	while [ true ]; do
 		./update-krcl-playlist.sh ${song_index} ${streamripper_date};
@@ -29,6 +31,11 @@ main() {
 		song_end_ts=$(TZ="America/Denver" date -d "${song_end}" "+%s");
 		now_ts=$(TZ="America/Denver" date "+%s");
 		sleep_timer=$(( $song_end_ts - $now_ts ));
+
+		if [[ "${song_end}" != "${last_song_end}" ]]; then
+			song_index=$(( $song_index + 1 ));
+			last_song_end="${song_end}";
+		fi
 
 		./now-playing.sh
 #		echo "Interval: ${sleep_timer}";
@@ -41,9 +48,16 @@ main() {
 #		sleep $sleep_timer;
 		sleepdisplay $sleep_timer;
 
-		
-
+		now=$(TZ="America/Denver" date '+%Y%m%d');
+		if [[ "${startup_date}" != "${now}" ]]; then
+			# We've crossed into a new day...restart stream ripper and restart loop...
+			break;
+		fi
 	done;
+
+	finish
+	startup
+	main
 }
 
 
@@ -60,7 +74,15 @@ sleepdisplay() {
 }
 
 finish() {
-	pkill --full "streamripper.*krcl-high";
+	kill_streamripper
+}
+
+kill_streamripper() {
+
+	while [[ `pgrep --full "streamripper.*krcl-high"` ]]; do
+		pkill --full "streamripper.*krcl-high";
+		sleep 2
+	done;
 }
 
 
@@ -69,4 +91,3 @@ trap finish EXIT
 setup
 main
 	
-
