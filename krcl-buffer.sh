@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/bin/bash -ue
 
 default_sleep_timer=60; 
 sleep_timer=$default_sleep_timer; 
-max_timer=300; 
+max_timer=600; 
+
+if [[ ! `pgrep streamripper` ]]; then
+	streamripper 'http://stream.xmission.com/krcl-high' -A -a 'data/%d.mp3' 2>&1 >> data/streamripper.log &
+fi
 
 while [ true ]; do
 	./update-krcl-playlist.sh;
@@ -16,7 +20,7 @@ while [ true ]; do
 	./now-playing.sh
 	echo "Interval: ${sleep_timer}";
 
-	if [[ $sleep_timer < 1 || $sleep_timer > $max_timer ]]; then
+	if [ $sleep_timer -lt 1 -o $sleep_timer -gt $max_timer ]; then
 		sleep_timer=$default_sleep_timer;
 	fi
 
