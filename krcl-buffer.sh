@@ -16,7 +16,8 @@ setup() {
 
 	if [[ ! `pgrep --full 'streamripper.*krcl-high'` ]]; then
 		# Try to guess the streamripper file...
-		streamripper_date=$(TZ="America/Denver" date '+%Y_%m_%d_%H_%M_%S');
+#		streamripper_date=$(TZ="America/Denver" date '+%Y_%m_%d_%H_%M_%S');
+		streamripper_date=$(TZ="America/Denver" date '+%Y%m%d%H%M%S');
 		streamripper_file="${streamripper_date}-%d.mp3";
 #		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a 'data/new/%d.mp3' 2>&1 >> data/streamripper.log &
 		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a "data/new/${streamripper_file}" 2>&1 >> data/streamripper.log &
