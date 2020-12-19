@@ -60,7 +60,7 @@ main() {
 	done;
 
 	finish
-	startup
+	setup
 	main
 }
 
