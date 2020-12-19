@@ -17,14 +17,15 @@ setup() {
 	if [[ ! `pgrep --full 'streamripper.*krcl-high'` ]]; then
 		# Try to guess the streamripper file...
 		streamripper_date=$(TZ="America/Denver" date '+%Y_%m_%d_%H_%M_%S');
+		streamripper_file="${streamripper_date}-%d.mp3";
 #		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a 'data/new/%d.mp3' 2>&1 >> data/streamripper.log &
-		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a "data/new/${streamripper_date}.mp3" 2>&1 >> data/streamripper.log &
+		TZ="America/Denver" streamripper 'http://stream.xmission.com/krcl-high' -A -a "data/new/${streamripper_file}" 2>&1 >> data/streamripper.log &
 	fi
 }
 
 main() { 
 	last_song_end="";
-	echo "Streamripper filename: ${streamripper_date}";
+	echo "Streamripper filename: ${streamripper_file}";
 	while [ true ]; do
 		./update-krcl-playlist.sh ${song_index} ${streamripper_date};
 		song_end=$(TZ="America/Denver" sqlite3 db/krcl-playlist.sqlite3 'select end from playlist order by start desc limit 1' );

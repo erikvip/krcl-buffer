@@ -1,2 +1,4 @@
-db/*
-data/*
+db/*.sqlite3
+data/*.mp3
+data/*.log
+data/*.cue
