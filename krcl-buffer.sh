@@ -39,7 +39,9 @@ main() {
 		fi;
 
 		if [[ "${song_end}" != "${last_song_end}" ]]; then
-			./extract-song.sh "${song_index}" "${streamripper_date}"
+			if [ $song_index -gt 0 ]; then
+				./extract-song.sh "${song_index}" "${streamripper_date}"
+			fi
 			song_index=$(( $song_index + 1 ));
 			last_song_end="${song_end}";
 		fi
