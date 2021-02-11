@@ -87,6 +87,7 @@ main() {
 
 	# Now run FF mpeg
 	ffmpeg -stats -ss ${_cutsecondstart} -t ${_duration} -i "$_file" \
+		-q:a 2 \
 		-metadata artist="${_tagartist}" \
 		-metadata album="${_tagrelease}" \
 		-metadata title="${_tagsong}" \
