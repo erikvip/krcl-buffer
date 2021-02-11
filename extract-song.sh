@@ -82,6 +82,8 @@ main() {
 	_tagrelease=$(echo "SELECT release FROM playlist WHERE streamfile=${_streamfile} AND songindex=${_songindex};" | sqlite3 db/krcl-playlist.sqlite3);	
 	_tagsong=$(echo "SELECT song FROM playlist WHERE streamfile=${_streamfile} AND songindex=${_songindex};" | sqlite3 db/krcl-playlist.sqlite3);	
 
+	# Fix breaking characters in filename
+	_filenamesafe=$(echo "${_filename}" | sed -e 's/[^A-Za-z0-9._-()\[\]]/_/g');
 
 	# Now run FF mpeg
 	ffmpeg -stats -ss ${_cutsecondstart} -t ${_duration} -i "$_file" \
@@ -89,7 +91,7 @@ main() {
 		-metadata album="${_tagrelease}" \
 		-metadata title="${_tagsong}" \
 		-metadata track="${_tagtrack}" \
-		 "${_outputdir}/${_filename}"
+		 "${_outputdir}/${_filenamesafe}"
 }
 
 main $@
