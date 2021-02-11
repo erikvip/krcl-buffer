@@ -3,7 +3,7 @@
 # Since this all happens in Salt Lake, keep everything on Mountain time for consistency.
 TZ="America/Denver";
 
-default_sleep_timer=60; 
+default_sleep_timer=20; 
 sleep_timer=$default_sleep_timer; 
 max_timer=600; 
 startup_date="";
@@ -39,7 +39,7 @@ main() {
 		fi;
 
 		if [[ "${song_end}" != "${last_song_end}" ]]; then
-			if [ $song_index -gt 0 ]; then
+			if [[ "${song_index}" -gt 0 ]]; then
 				./extract-song.sh "${song_index}" "${streamripper_date}"
 			fi
 			song_index=$(( $song_index + 1 ));
