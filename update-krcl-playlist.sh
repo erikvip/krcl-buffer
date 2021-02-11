@@ -16,6 +16,10 @@ wget --user-agent Firefox -q -O - 'https://krcl.org/endpoints/now-playing/' | \
 	sed "s#'\\\''#''#g" | \
 	sqlite3 db/krcl-playlist.sqlite3
 
+
+_showtitle=$(echo "SELECT showtitle FROM playlist WHERE streamfile=${_streamfile} AND songindex=${_songindex};" | sqlite3 db/krcl-playlist.sqlite3);
+echo "REPLACE INTO shows (showtitle) VALUES('${_showtitle})" | sqlite3 db/krcl-playlist.sqlite3
+
 # The second to last sed line there converts shell escaping to Sqlite escaping...
 
 
