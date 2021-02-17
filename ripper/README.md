@@ -1,0 +1,3 @@
+# KRCL Ripper
+
+Think I've found an easier way to get track names...this will rip the old archived streams, but also split tracks and tag everything correctly...
