@@ -120,15 +120,15 @@ get_filedate() {
 
 	hour=$(TZ="America/Denver" date --date="@${secs}" "+%H");
 	min=$(TZ="America/Denver" date --date="@${secs}" "+%M");
-	filedate=$(TZ="America/Denver" date --date="@${secs}" "+%Y%m%d-%H");
-
 	
+	filedate=$(TZ="America/Denver" date --date="@${secs}" "+%Y-%m-%dT%H:%M:%S");
+
 
 	# Files are split into 15 min increments...so figure out which file
-	if [[ $min > 0 && $min < 16 ]]; then filedate="${filedate}0000";  fi;
-	if [[ $min > 15 && $min < 31 ]]; then filedate="${filedate}1500";  fi;
-	if [[ $min > 30 && $min < 46 ]]; then filedate="${filedate}3000";  fi;
-	if [[ $min > 45 ]]; then filedate="${filedate}4500";  fi;
+#	if [[ $min > 0 && $min < 16 ]]; then filedate="${filedate}0000";  fi;
+#	if [[ $min > 15 && $min < 31 ]]; then filedate="${filedate}1500";  fi;
+#	if [[ $min > 30 && $min < 46 ]]; then filedate="${filedate}3000";  fi;
+#	if [[ $min > 45 ]]; then filedate="${filedate}4500";  fi;
 
 	echo $filedate;
 
@@ -195,12 +195,35 @@ main() {
 			#print_r ROW
 			sp=$(( 30-${#ROW[artist]} ));
 			_tracksp=$(printf "%${sp}s"); 
-			echo -e "$filedate ${ROW[date]} ${ROW[time]} :: ${ROW[artist]:0:29} $_tracksp ${ROW[track]} " >> ${OUTPUT_TMP}
+			#echo -e "$filedate ${ROW[date]} ${ROW[time]} :: ${ROW[artist]:0:29} $_tracksp ${ROW[track]} " >> ${OUTPUT_TMP}
+#			echo -e "$filedate ${ROW[date]} ${ROW[time]} :: ${ROW[artist]:0:29} $_tracksp ${ROW[track]} " >> ${OUTPUT_TMP}
+
+			#echo -e "REPLACE INTO SONGS (start, artist, title, duration) VALUES)"
+			#_dt=$(echo "$filedate" | tr '-' 'T' | sed 's/ */ /g' | awk -F ' ' '{ print $1$2$3$4"-"$5$6"-"$7$8$9$10$11":"$12$13":"$14$15 }');
+
+
+#			_fxtime=$(echo "$filedate ${ROW[date]} ${ROW[time]}" | tr '-' 'T' | sed 's/ */ /g' | awk -F ' ' '{ print $1$2$3$4"-"$5$6"-"$7$8" "$21$22":"$24$25" "$26$27 }');
+#			_dt=$(TZ="America/Denver" date -d "$_fxtime" '+%Y-%m-%dT%H:%M:%S');
+			echo -e "REPLACE INTO songs (start, artist, title) VALUES(\"${filedate}\", \"${ROW[artist]:0:29}\", \"${ROW[track]}\");" >> ${OUTPUT_TMP}
+
 		fi
 	done
 	IFS=$OFS;
 
-	cat ${OUTPUT_TMP} | sort | uniq
+	cat ${OUTPUT_TMP} | sort | uniq | sponge "${OUTPUT_TMP}"
+	cat ${OUTPUT_TMP}
+	cat ${OUTPUT_TMP} | sqlite3 db/krcl-playlist-data.sqlite3
+
+
+	# Now link up the song -> track references....
+	for r in $(echo 'select s.start, t.track_id, strftime("%s",t.end) - strftime("%s", t.start) from songs s JOIN tracks t on (strftime("%Y-%m-%dT%H:%M", s.start) = strftime("%Y-%m-%dT%H:%M", t.start))' | sqlite3 db/krcl-playlist-data.sqlite3); do
+		_start=$(echo $r | cut -d '|' -f1)
+		_trackid=$(echo $r | cut -d '|' -f2)
+		_duration=$(echo $r | cut -d '|' -f3)
+		echo "UPDATE songs SET track_id=${_trackid}, duration=${_duration} WHERE start=\"${_start}\";" | sqlite3 db/krcl-playlist-data.sqlite3
+	done;
+
+
 }
 cleanup () {
 	rm "${OUTPUT_TMP}"
