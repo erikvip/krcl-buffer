@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 set -o nounset  # Fail when access undefined variable
 set -o errexit  # Exit when a command fails
 
@@ -173,9 +173,12 @@ MP3 URL     : ${_audiourl}\n\
 		--yes-button "Download" \
 		--no-button "<< Back"  22 80 \
 		|| ( "${_show_id}" -eq "" ] && _wt_main || _wt_broadcasts "${_show_id}" ) \
-		&& _wt_rip_broadcast "${_r}" 
-		
+		&& _wt_rip_broadcast "${_broadcast_id}"
+}
 
+_wt_rip_broadcast() {
+	_broadcast_id="${1}";
+	./rip-broadcast.sh "${_broadcast_id}" && _wt_main || error "rip broadcast ${_broadcast_id} failed";
 }
 
 setup $@
