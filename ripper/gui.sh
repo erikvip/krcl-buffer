@@ -1,5 +1,5 @@
 #!/bin/bash -x
-#set -o nounset  # Fail when access undefined variable
+set -o nounset  # Fail when access undefined variable
 set -o errexit  # Exit when a command fails
 
 export TZ="America/Denver" 

@@ -1,13 +1,17 @@
-#!/bin/bash
+#!/bin/bash 
 set -o nounset  # Fail when access undefined variable
 set -o errexit  # Exit when a command fails
 
 export TZ="America/Denver" 
 
+
+
+
 QUERY=${1:-}; 
 RIPDATE=${2:-}; 
 BROADCAST_ID=NULL;
 SHOW_NAME=NULL;
+OUTPUT_DIR="../music/";
 
 setup() {
 	# Can use either broadcast id or the show name
@@ -52,18 +56,13 @@ INNER JOIN songs s USING (track_id) \
 WHERE b.broadcast_id=${BROADCAST_ID}
 ORDER BY t.start
 "
-
-    #_sql="SELECT * from tracks t join broadcasts b join broadcast_status bs join shows sh using (show_id) where b.broadcast_id=22992 AND show"
-
-#FROM broadcasts b 
- # join tracks t using (broadcast_id) 
- # left join broadcast_status bs using (broadcast_id) 
- # left join songs s using (track_id)
- # left join shows sh using (show_id) 
-#WHERE b.broadcast_id=${BROADCAST_ID} 
-#EOQ
-#);
 	_res=$(echo "${_sql}" | sqlite3 -newline $'\r\n' db/krcl-playlist-data.sqlite3);
+	if [[ -z "${_res}" ]]; then
+		echo "Could not locate broadcast information..."
+		echo $_sql;
+		exit 1;
+	fi
+
 
 	OFS=$IFS
 	IFS=$'\r\n';
@@ -82,14 +81,24 @@ ORDER BY t.start
 
 		if [ ! -e `basename "${_audiourl}"` -o -e `basename "${_audiourl}"`.aria2 ]; then
 			aria2c -c "${_audiourl}";
+			if [[ $? != 0 ]]; then
+				echo "Error: aria2 failed to download mp3..."
+				echo "Waiting 10 seconds then retrying...";
+				sleep 10;
+				`${BASH_SOURCE[0]} "${QUERY}"`
+				exit 1
+			fi
 		fi
 
 #echo $_audiourl;
 		index=$(printf "%0.4d" "${c}");
 		wtf=$(( $_position+$_duration ));
 
+		mkdir -p "${OUTPUT_DIR}${_showtitle}/"
+
 		_ofile="${index}-[KRCL-${_showname}]-${_artist}-${_title}.mp3"
 		_ofile=$(echo "${_ofile}" | tr " " "_" | tr -dc "_A-Z-a-z-0-9 #:_\-\.\n\[\]\(\)");
+		_ofile="${OUTPUT_DIR}{$_showtile}/${_ofile}"
 
 
 	
@@ -102,7 +111,16 @@ ORDER BY t.start
 		nextcut="${wtf}";
 
 
-		ffmpeg -stats -ss "${_position}" -t "${_duration}" -i "`basename "${_audiourl}"`" -q:a 2 "${_ofile}";
+		ffmpeg -stats \
+			-ss "${_position}" \
+			-t "${_duration}" \
+			-i "`basename "${_audiourl}"`" \
+			-q:a 2 \
+			-metadata artist="KRCL" \
+			-metadata album="${_showtitle}" \
+			-metadata title="${index}-${_artist}-${_title}" \
+			-metadata track="${index}" \
+			 "${_ofile}";
 
 		c=$(( c+1 ));
 	done
