@@ -165,9 +165,10 @@ Broadcast   : ${_showtitle}\n\
 MP3 URL     : ${_audiourl}\n\
 ";
 		_wt_message="${_wt_message}${c}: [${_duration}s] ${_artist} - ${_title}\n";
+		_wt_title="${_showtitle}"
 	done
 
-	whiptail --scrolltext --title "${_showtitle}" \
+	whiptail --scrolltext --title "${_wt_title}" \
 		--scrolltext \
 		--yesno "${_wt_message_header}\nTrack List:\n${_wt_message}" \
 		--yes-button "Download" \

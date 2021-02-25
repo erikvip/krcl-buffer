@@ -59,6 +59,10 @@ for bid in $(echo "select broadcast_id from broadcasts where DATE(start) < DATE(
 	_audiourl=$(cat "${_tmpdata}" | jq -r '.data.audio.url');
 
 	echo "${_showtitle}. MP3 URL: ${_audiourl}";
+	if [[ ! $_audiourl =~ ^http ]]; then
+		echo "No audiourl found...skipping".
+		continue;
+	fi
 
 	cat "${_tmpdata}" | jq -r '.data.tracks[] | "REPLACE INTO tracks (track_id, broadcast_id, show_id, start, end) VALUES(\(.id), '${bid}', '${_showid}', \"\(.start)\", \"\(.end)\");"' \
 		| sqlite3 db/krcl-playlist-data.sqlite3

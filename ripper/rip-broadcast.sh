@@ -1,6 +1,6 @@
 #!/bin/bash 
 set -o nounset  # Fail when access undefined variable
-set -o errexit  # Exit when a command fails
+#set -o errexit  # Exit when a command fails
 
 export TZ="America/Denver" 
 
@@ -12,6 +12,7 @@ RIPDATE=${2:-};
 BROADCAST_ID=NULL;
 SHOW_NAME=NULL;
 OUTPUT_DIR="../music/";
+ARIA_RETRY_DELAY_BASE=30;
 
 setup() {
 	# Can use either broadcast id or the show name
@@ -79,15 +80,25 @@ ORDER BY t.start
 		_showname=$(echo "$i" | cut -d '|' -f8);
 		_audiourl=$(echo "$i" | cut -d '|' -f9);
 
+		_dl_attempts=0;
+		_dl_success=0;
 		if [ ! -e `basename "${_audiourl}"` -o -e `basename "${_audiourl}"`.aria2 ]; then
-			aria2c -c "${_audiourl}";
-			if [[ $? != 0 ]]; then
-				echo "Error: aria2 failed to download mp3..."
-				echo "Waiting 10 seconds then retrying...";
-				sleep 10;
-				`${BASH_SOURCE[0]} "${QUERY}"`
-				exit 1
-			fi
+			while [ $_dl_success -ne 1 ]; do
+				_dl_attempts=$(( ${_dl_attempts} + 1 ));
+				echo "Attempts: ${_dl_attempts}";
+				aria2c -c "${_audiourl}";
+				if [ $? -ne 0 ]; then
+					echo "Error: aria2 failed to download mp3..."
+					_retry_delay=$(( ${ARIA_RETRY_DELAY_BASE} * ${_dl_attempts} ));
+					echo "Waiting ${_retry_delay} seconds then retrying...attempt ${_dl_attempts}";
+					sleepdisplay ${_retry_delay};
+
+				#	`${BASH_SOURCE[0]} "${QUERY}"`
+				#	exit 1
+				else
+					_dl_success=1;
+				fi
+			done
 		fi
 
 #echo $_audiourl;
@@ -134,5 +145,17 @@ ORDER BY t.start
 
 }
 
+
+sleepdisplay() {
+	_timeout=$1;
+	_remaining=$_timeout;
+
+	while [ $_remaining -gt 0 ]; do
+		echo -ne "\rSleeping for $_remaining seconds...";
+		_remaining=$(( $_remaining - 1 ));
+		sleep 1
+		echo -ne "\033[2K\r"
+	done
+}
 
 setup
