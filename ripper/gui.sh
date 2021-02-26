@@ -120,6 +120,7 @@ INNER JOIN broadcast_status bs USING (broadcast_id)
 _wt_broadcast_info() {
 	_broadcast_id=${1}
 	_show_id=${2:-};
+	_wt_title="";
 	_sql="SELECT \
 t.track_id,
 b.title,
@@ -173,8 +174,10 @@ MP3 URL     : ${_audiourl}\n\
 		--yesno "${_wt_message_header}\nTrack List:\n${_wt_message}" \
 		--yes-button "Download" \
 		--no-button "<< Back"  22 80 \
-		|| ( "${_show_id}" -eq "" ] && _wt_main || _wt_broadcasts "${_show_id}" ) \
+		|| _wt_main \
 		&& _wt_rip_broadcast "${_broadcast_id}"
+		# || ( [ "${_show_id}" -eq "" ] && _wt_main || _wt_broadcasts "${_show_id}" ) \
+		#&& _wt_rip_broadcast "${_broadcast_id}"
 }
 
 _wt_rip_broadcast() {

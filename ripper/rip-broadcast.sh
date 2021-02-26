@@ -109,7 +109,7 @@ ORDER BY t.start
 
 		_ofile="${index}-[KRCL-${_showname}]-${_artist}-${_title}.mp3"
 		_ofile=$(echo "${_ofile}" | tr " " "_" | tr -dc "_A-Z-a-z-0-9 #:_\-\.\n\[\]\(\)");
-		_ofile="${OUTPUT_DIR}{$_showtile}/${_ofile}"
+		_ofile="${OUTPUT_DIR}${_showtitle}/${_ofile}"
 
 
 	
