@@ -4,7 +4,7 @@ set -o errexit  # Exit when a command fails
 
 export TZ="America/Denver" 
 _tmpdata=$(mktemp);
-cleanup() {
+ cleanup() {
 	rm -r "${_tmpdata}"
 }
 
