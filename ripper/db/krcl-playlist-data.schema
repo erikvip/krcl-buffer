@@ -1,5 +1,0 @@
-CREATE TABLE shows (show_id int primary key not null, title text, name varchar(255), updated_at DATETIME);
-CREATE TABLE broadcasts (broadcast_id int primary key not null, show_id int, start datetime, end datetime, title text);
-CREATE TABLE tracks (track_id int primary key not null, broadcast_id int, show_id int, start datetime, end datetime);
-CREATE TABLE broadcast_status (broadcast_id int primary key not null, processed int default 0 not null, audiourl text);
-CREATE TABLE songs (start datetime primary key not null, artist text, title text, duration int, track_id int default null);

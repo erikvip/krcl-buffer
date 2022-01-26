@@ -1,6 +1,6 @@
-#!/bin/bash 
+#!/bin/bash -x
 set -o nounset  # Fail when access undefined variable
-#set -o errexit  # Exit when a command fails
+set -o errexit  # Exit when a command fails
 
 export TZ="America/Denver" 
 
@@ -21,7 +21,7 @@ setup() {
 		
 	elif [[ "$QUERY" =~ ^[a-z\-] ]]; then
 		SHOW_NAME="${QUERY}";
-		_res=$(echo "SELECT broadcast_id FROM broadcasts WHERE show_id = ( SELECT show_id FROM shows WHERE name=\"${SHOW_NAME}\" ;" \
+		_res=$(echo "SELECT broadcast_id FROM broadcasts WHERE show_id = ( SELECT show_id FROM shows WHERE name=\"${SHOW_NAME}\")  ORDER BY start DESC LIMIT 1;" \
 			| sqlite3 db/krcl-playlist-data.sqlite3);
 		BROADCAST_ID="${_res}";
 	else
@@ -35,8 +35,8 @@ setup() {
 
 main() {
 
-	#_sql="SELECT b.start, b.end, b.title \
-	#	FROM broadcasts b WHERE broadcast_id=${BROADCAST_ID}";
+	_sql="SELECT b.start, b.end, b.title \
+		FROM broadcasts b WHERE broadcast_id=${BROADCAST_ID}";
 
 	#_sql="SELECT \
 	_sql="SELECT \
