@@ -9,6 +9,12 @@ mkdir -p "${_KRCL_BROADCAST_CACHE_DIR}";
 export TZ="America/Denver" 
 _tmpdata=$(mktemp);
 
+# @ TODO
+# The timezones are screwed up...the broadcast data reports it's in UTC timezone and it is
+# But the Playlist data reports UTC but *IT'S NOT UTC*. It's America/Denver, but claims Greenwich...
+# This screws w/ all the date handling code...
+# Need to normalize / fix the timezone data...
+
 
 
 # Shows
@@ -44,12 +50,19 @@ trap cleanup EXIT
 #_oldest=$(echo "SELECT IFNULL( max(start), DATETIME('now', '-30 day') ) from broadcasts WHERE start < datetime('now', '-12 hour');" | sqlite3 "db/krcl-playlist-data.sqlite3" );
 #t_oldest=$(TZ="America/Denver" date --date="${_oldest}" "+%s");
 update_broadcasts() {
-	#_arg_maxdate=${1:-"2 weeks ago"};
-	_arg_maxdate=${1:-"5 days ago"};
+	_arg_maxdate=${1:-"2 weeks ago"};
+	#_arg_maxdate=${1:-"5 days ago"};
 	_ts_maxdate=$(TZ="America/Denver" date --date="${_arg_maxdate}" "+%s");
 	_ts_last=$(TZ="America/Denver" date --date="Now" "+%s");
 	_pg=0;
 	_baseurl="https://krcl-studio.creek.org/api/broadcasts?page=";
+
+	_sql='SELECT strftime("%s", start) FROM broadcasts WHERE start > DATE("now", "-14 day") AND tracks_processed=1 ORDER BY start DESC LIMIT 1;';
+	_ts_last_success=$(echo "${_sql}" | sqlite3 db/krcl-playlist-data.sqlite3); 
+	
+	if [ "${_ts_maxdate}" -lt "${_ts_last_success}" ]; then
+		_ts_maxdate="${_ts_last_success}";
+	fi 
 
 	# JQ Query string to format data for sqlite
 #	_jq=$(cat <<- END_QUERY
@@ -82,7 +95,7 @@ update_broadcasts() {
 	log "Updating broadcast data from ${_tmpdata}.sql"; 
 	sqlite3 db/krcl-playlist-data.sqlite3 < "${_tmpdata}.sql";
 }
-#update_broadcasts; 
+update_broadcasts; 
 
 #exit;
 
@@ -132,7 +145,7 @@ fetch_broadcast_songs() {
 		log "Cache hit: broadcast ${_bid} already saved at ${_json}";
 	else 
 		# Fetch the broadcast data
-		log "Cache miss: fetching broadcast data from ${_url}"
+		log "Cache miss: fetching broadcast data from ${_url}";
 		wget --user-agent "Firefox" -q -O "${_json}" "${_url}";
 	fi
 
@@ -154,7 +167,7 @@ update_broadcast_songs() {
 	_sql=$(cat << END_QUERY
 		SELECT broadcast_id FROM broadcasts 
 		WHERE 
-			DATE(start) < DATE('now', '-12 hour') 
+			DATETIME(start) < DATETIME('now', '-12 hour') 
 			AND tracks_processed != 1 ORDER BY start DESC
 END_QUERY
 );
